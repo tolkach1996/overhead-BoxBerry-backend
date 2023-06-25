@@ -3,7 +3,8 @@ const cors = require('cors')
 const xlsx = require('xlsx')
 const Moysklad = require('moysklad')
 const fileupload = require('express-fileupload')
-const fs = require('fs')
+const path = require('path');
+const { fetch } = require('undici')
 require('dotenv').config()
 
 const token = process.env.MOYSKLAD_TOKEN
@@ -34,8 +35,12 @@ app.post('/downloadConsigmentExcel', (req, res) => {
     const workbook = xlsx.utils.book_new();
     const worksheet = xlsx.utils.json_to_sheet(req.body?.data)
     xlsx.utils.book_append_sheet(workbook, worksheet)
-    xlsx.writeFile(workbook, `Sheets/test.xlsx`)
-    res.sendFile(__dirname + '/Sheets/test.xlsx')
+    xlsx.writeFile(workbook, `files/test.xlsx`);
+
+    const pathFile = path.join(__dirname, 'files', 'test.xlsx');
+
+
+    res.sendFile(pathFile);
     //fs.createReadStream('Sheets/test.xlsx').pipe(res)
     //res.status(200).json('Сервер создал файл Excel')
     //res.sendFile(__dirname + )
@@ -45,20 +50,25 @@ app.post('/downloadConsigmentExcel', (req, res) => {
 
 
 
-const ms = Moysklad({ token })
+const ms = Moysklad({ token, fetch })
 const options = {
-    limit: 5,
+    limit: 7,
     filter: {
-        name: 'Оформлен',
-        description: 'ПВЗ Боксберри'
-    }
+        state: {
+            name: 'Оплачен'
+        }
+    },
+    expand: 'state'
 }
 let test = async function () {
-    const productsCollection = await ms.GET('entity/customerorder')
+    const productsCollection = await ms.GET('entity/customerorder', options);
 
-    console.log(productsCollection.rows[0])
+    productsCollection.rows.forEach(item => {
+        console.log(`${item.meta.uuidHref} - ${item.state.name} - ${item.payedSum / 100} руб`);
+    });
+
 }
-test()
+test();
 //const productsCollection = ms.GET('entity/product', { limit: 50 })
 //console.log(productsCollection)
 
