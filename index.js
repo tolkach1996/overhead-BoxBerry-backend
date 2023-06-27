@@ -49,10 +49,40 @@ app.post('/downloadConsigmentExcel', (req, res) => {
 })
 
 
+app.get('/getFilterData', (req, res) => {
+    let data = [];
+    let project = [];
+    getFilterData(data, project)
 
-const ms = Moysklad({ token, fetch })
+
+    console.log(data)
+
+    //res.send()
+
+    //const workbook = xlsx.utils.book_new();
+    //const worksheet = xlsx.utils.json_to_sheet(req.body?.data)
+    //xlsx.utils.book_append_sheet(workbook, worksheet)
+    //xlsx.writeFile(workbook, `files/test.xlsx`);
+
+    //const pathFile = path.join(__dirname, 'files', 'test.xlsx');
+
+
+    //res.sendFile(pathFile);
+
+
+})
+async function getFilterData(data, project) {
+    const metadata = await ms.GET('entity/customerorder/metadata');
+    metadata.states.forEach(({ name }) => data.push(name));
+    const projects = await ms.GET('entity/project');
+    projects.rows.forEach(item => project.push(item.name))
+    return data, project
+    console.log(data, project)
+}
+
+/*const ms = Moysklad({ token, fetch })
 const options = {
-    limit: 7,
+    //limit: 7,
     filter: {
         state: {
             name: 'Оплачен'
@@ -67,8 +97,19 @@ let test = async function () {
         console.log(`${item.meta.uuidHref} - ${item.state.name} - ${item.payedSum / 100} руб`);
     });
 
+}*/
+const ms = Moysklad({ token, fetch });
+
+let test = async function () {
+    const data = await ms.GET('entity/customerorder/metadata');
+    //data.states.forEach(({ name }) => console.log(name));
+    const project = await ms.GET('entity/project');
+    //project.rows.forEach(item => console.log(item.name))
+    return (data, project)
 }
-test();
+
+
+//test();
 //const productsCollection = ms.GET('entity/product', { limit: 50 })
 //console.log(productsCollection)
 
