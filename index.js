@@ -40,15 +40,6 @@ app.post('/downloadConsigmentExcel', (req, res) => {
     res.sendFile(pathFile);
 })
 
-
-app.post('/postSelectedFilters', (req, res) => {
-    const { selectedMetadata, selectedProjects } = req.body.data
-    console.log(selectedMetadata)
-    console.log(selectedProjects)
-    res.send('Получил запрос')
-})
-
-
 app.get('/getFilterData', async (req, res) => {
     try {
         let metadata = await getFilterMetadata();
@@ -59,6 +50,50 @@ app.get('/getFilterData', async (req, res) => {
         console.error(e)
     }
 })
+
+app.post('/postSelectedFilters', async (req, res) => {
+    try {
+        const { selectedMetadata, selectedProjects } = req.body.data
+        const options = {
+            filter: {
+                state: {
+                    name: []
+                },
+                project: []
+            },
+            expand: 'agent'
+        }
+        for (item of selectedMetadata) {
+            options.filter.state.name.push(item.name)
+        }
+        for (item of selectedProjects) {
+            options.filter.project.push('https://online.moysklad.ru/api/remap/1.2/entity/project/' + item.id)
+        }
+        const getCustomerOrder = await ms.GET('entity/customerorder', options);
+        let todayDate = new Date()
+        todayDate = todayDate.getFullYear() + String(todayDate.getMonth() + 1).padStart(2, '0') + String(todayDate.getDate()).padStart(2, '0')
+        const response = []
+        for (item of getCustomerOrder.rows) {
+            let object = {
+                dataPackage: todayDate,
+                number: item.name,
+                declaredSum: '???',
+                paySum: '???',
+                deliverySum: 'Взять из Boxbery',
+                dataTransfer: todayDate,
+                typeTransfer: '???',
+                codePWZ: 'Взять из Boxbery',
+                departurePointCode: '010',
+                fio: item.agent.name,
+                phone: item.agent.phone
+            }
+            response.push(object)
+        }
+        res.json(response)
+    }
+    catch (e) { console.log(e) }
+})
+
 
 async function getFilterMetadata() {
     const metadata = []
@@ -72,57 +107,6 @@ async function getFilterProject() {
     getProjects.rows.forEach(({ id, name }) => project.push({ id, name }))
     return project
 }
-
-
-
-
-
-
-
-
-
-
-
-
-const options = {
-    limit: 1,
-    expand: 'project',
-    filter: {
-        state: {
-            name: "Отгружен + Чек"
-        },
-        /*project: {
-            name: 'Frudia май'
-        }*/
-    }
-}
-
-
-
-
-let test = async function () {
-    const getCustomerOrder = await ms.GET('entity/project', { limit: "2", expand: 'group', });
-    console.log(getCustomerOrder.rows[0])
-
-    /*const filterCustomerOrder = []
-    const getCustomerOrder = await ms.GET('entity/customerorder', options);
-    console.log(getCustomerOrder.rows[0].project.name)
-
-    for (let i = 0; i < Math.ceil(getCustomerOrder.meta.size / 1000); i++) {
-        for (let n = 0; n < 1000; n += 100) {
-            const customerOrder = await ms.GET('entity/customerorder', { filter: { state: { name: "Отгружен + Чек" } }, limit: "100", offset: i + n, expand: 'project' });
-            for (order of customerOrder.rows) {
-                if ('project' in order) {
-                    if (order.project.name == "Frudia май") {
-                        filterCustomerOrder.push(order)
-                    }
-                }
-            }
-        }
-    }
-    console.log(filterCustomerOrder.length)*/
-}
-test();
 
 
 start()
