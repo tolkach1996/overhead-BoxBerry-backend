@@ -2,13 +2,15 @@ const express = require('express')
 const cors = require('cors')
 const xlsx = require('xlsx')
 const Moysklad = require('moysklad')
+const axios = require("axios")
 const fileupload = require('express-fileupload')
 const path = require('path');
 const { fetch } = require('undici')
 require('dotenv').config()
 
 
-const token = process.env.MOYSKLAD_TOKEN
+const msToken = process.env.MOYSKLAD_TOKEN
+const boxberryToken = process.env.Boxbery_TOKEN
 const PORT = process.env.PORT || 5000
 
 
@@ -17,7 +19,7 @@ app.use(cors({ origin: "*" }))
 app.use(express.json())
 app.use(fileupload())
 
-const ms = Moysklad({ token, fetch });
+const ms = Moysklad({ msToken, fetch });
 
 
 const start = () => {
@@ -61,7 +63,8 @@ app.post('/postSelectedFilters', async (req, res) => {
                 },
                 project: []
             },
-            expand: 'agent'
+            expand: 'agent',
+            //limit: '1'
         }
         for (item of selectedMetadata) {
             options.filter.state.name.push(item.name)
@@ -73,12 +76,23 @@ app.post('/postSelectedFilters', async (req, res) => {
         let todayDate = new Date()
         todayDate = todayDate.getFullYear() + String(todayDate.getMonth() + 1).padStart(2, '0') + String(todayDate.getDate()).padStart(2, '0')
         const response = []
+        //console.log(getCustomerOrder.rows[1])
         for (item of getCustomerOrder.rows) {
+            let description = item.description.split(/\s* \s*/);
+            let index;
+            if (description[0] == 'ПВЗ') {
+                index = description[2]
+                index = index.replace(/,*$/, "").replace(/^\,*/, "")
+            } else index = 'Не указан пункт доставки'
+            let declaredSum;
+            if (item.sum / 100 < 10000) {
+                declaredSum = 5;
+            } else declaredSum = item.sum / 100
             let object = {
                 dataPackage: todayDate,
                 number: item.name,
-                declaredSum: '???',
-                paySum: '???',
+                declaredSum: declaredSum,
+                paySum: index,
                 deliverySum: 'Взять из Boxbery',
                 dataTransfer: todayDate,
                 typeTransfer: '???',
@@ -109,4 +123,24 @@ async function getFilterProject() {
 }
 
 
+
+let getSumDelivery = async function () {
+    const options = {
+        token: boxberryToken,
+        method: 'ListZip',
+
+    }
+
+    let a = await axios.get(`https://api.boxberry.ru/json.php?token=${boxberryToken}&method=ZipCheck&Zip=141407`)
+    console.log(a.request.agent)
+    /*const options = {
+        token: boxberryToken,
+        targetstart:'010',
+
+    }
+    let a = await axios.get('https://api.boxberry.ru/json.php', options)
+    console.log(a)*/
+}
+
+getSumDelivery()
 start()
