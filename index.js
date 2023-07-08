@@ -3,11 +3,13 @@ const cors = require('cors')
 const xlsx = require('xlsx')
 const Moysklad = require('moysklad')
 const axios = require("axios")
+const { initialMongoConnection } = require('./utils/mongoose')
 const fileupload = require('express-fileupload')
 const path = require('path');
 const { fetch } = require('undici')
+const listPointsBoxbery = require('./models/ListPointsBoxbery')
 require('dotenv').config()
-
+initialMongoConnection()
 
 const msToken = process.env.MOYSKLAD_TOKEN
 const boxberryToken = process.env.Boxbery_TOKEN
@@ -76,7 +78,7 @@ app.post('/postSelectedFilters', async (req, res) => {
         let todayDate = new Date()
         todayDate = todayDate.getFullYear() + String(todayDate.getMonth() + 1).padStart(2, '0') + String(todayDate.getDate()).padStart(2, '0')
         const response = []
-        //console.log(getCustomerOrder.rows[1])
+        console.log(getCustomerOrder.rows[1])
         for (item of getCustomerOrder.rows) {
             let description = item.description.split(/\s* \s*/);
             let index;
@@ -84,6 +86,7 @@ app.post('/postSelectedFilters', async (req, res) => {
                 index = description[2]
                 index = index.replace(/,*$/, "").replace(/^\,*/, "")
             } else index = 'Не указан пункт доставки'
+            console.log(index)
             let declaredSum;
             if (item.sum / 100 < 10000) {
                 declaredSum = 5;
@@ -123,24 +126,53 @@ async function getFilterProject() {
 }
 
 
+let getListPoinsBoxbery = async function () {
+    /*let a = await axios.get(`https://api.boxberry.ru/json.php?token=${boxberryToken}&method=ListPoints&prepaid=1&CountryCode=643`)
+    //console.log(a.data[0])
+    //await listPointsBoxbery.create({ "id": a.data[0].Code, "code": a.data[0].Code })
+    for (let item of a.data) {
+        const { Address } = item;
+        const description = Address.split(",");
+        const index = description[0]
+        await listPointsBoxbery.create({
+            Code: item.Code,
+            Name: item.Name,
+            Index: index,
+            Address: item.Address,
+            Phone: item.Phone,
+            WorkShedule: item.WorkShedule,
+            TripDescription: item.TripDescription,
+            DeliveryPeriod: item.DeliveryPeriod,
+            CityCode: item.CityCode,
+            CityName: item.CityName,
+            TariffZone: item.TariffZone,
+            Settlement: item.Settlement,
+            Area: item.Area,
+            Country: item.Country,
+            GPS: item.GPS,
+            AddressReduce: item.AddressReduce,
+            OnlyPrepaidOrders: item.OnlyPrepaidOrders,
+            Acquiring: item.Acquiring,
+            DigitalSignature: item.DigitalSignature,
+            CountryCode: item.CountryCode,
+            NalKD: item.NalKD,
+            Metro: item.Metro,
+            TypeOfOffice: item.TypeOfOffice,
+            VolumeLimit: item.VolumeLimit,
+            LoadLimit: item.LoadLimit,
+            Postamat: item.Postamat,
+        })
+    }*/
 
-let getSumDelivery = async function () {
-    const options = {
-        token: boxberryToken,
-        method: 'ListZip',
 
-    }
-
-    let a = await axios.get(`https://api.boxberry.ru/json.php?token=${boxberryToken}&method=ZipCheck&Zip=141407`)
-    console.log(a.request.agent)
-    /*const options = {
-        token: boxberryToken,
-        targetstart:'010',
-
-    }
-    let a = await axios.get('https://api.boxberry.ru/json.php', options)
-    console.log(a)*/
+    //console.log(a.data[0])
 }
 
-getSumDelivery()
+
+async function test() {
+    let aaa = await listPointsBoxbery.findOne({ Index: "675000" }).lean()
+    console.log(aaa)
+}
+test()
+//getSumDelivery()
 start()
