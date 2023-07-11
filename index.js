@@ -78,31 +78,36 @@ app.post('/postSelectedFilters', async (req, res) => {
         let todayDate = new Date()
         todayDate = todayDate.getFullYear() + String(todayDate.getMonth() + 1).padStart(2, '0') + String(todayDate.getDate()).padStart(2, '0')
         const response = []
-        console.log(getCustomerOrder.rows[1])
         for (item of getCustomerOrder.rows) {
             let description = item.description.split(/\s* \s*/);
+            let isPVZ = description.findIndex(item => item == 'ПВЗ')
             let index;
-            if (description[0] == 'ПВЗ') {
-                index = description[2]
+            let deliverySum;
+            let paySum;
+            let getPointBoxbery;
+            if (isPVZ != -1) {
+                index = description[isPVZ + 2]
                 index = index.replace(/,*$/, "").replace(/^\,*/, "")
-            } else index = 'Не указан пункт доставки'
-            console.log(index)
-            let declaredSum;
-            if (item.sum / 100 < 10000) {
-                declaredSum = 5;
-            } else declaredSum = item.sum / 100
+                getPointBoxbery = await listPointsBoxbery.findOne({ Index: `${index}` }).lean()
+                deliverySum = await axios.get(`https://api.boxberry.ru/json.php?token=${boxberryToken}&method=DeliveryCosts&targetstart=010&target=${getPointBoxbery.Code}&weight=3000`)
+                paySum = Math.ceil(deliverySum.data.price / 50) * 50
+                deliverySum = deliverySum.data.price
+                getPointBoxbery = getPointBoxbery.Code
+            } else continue
+            let declaredSum = item.sum / 100 < 10000 ? 5 : item.sum / 100;
             let object = {
                 dataPackage: todayDate,
                 number: item.name,
                 declaredSum: declaredSum,
-                paySum: index,
-                deliverySum: 'Взять из Boxbery',
+                paySum: paySum,
+                deliverySum: deliverySum,
                 dataTransfer: todayDate,
-                typeTransfer: '???',
-                codePWZ: 'Взять из Boxbery',
+                typeTransfer: '1',
+                codePWZ: getPointBoxbery,
                 departurePointCode: '010',
                 fio: item.agent.name,
-                phone: item.agent.phone
+                phone: item.agent.phone,
+                weightPackage: '3000'
             }
             response.push(object)
         }
@@ -126,53 +131,4 @@ async function getFilterProject() {
 }
 
 
-let getListPoinsBoxbery = async function () {
-    /*let a = await axios.get(`https://api.boxberry.ru/json.php?token=${boxberryToken}&method=ListPoints&prepaid=1&CountryCode=643`)
-    //console.log(a.data[0])
-    //await listPointsBoxbery.create({ "id": a.data[0].Code, "code": a.data[0].Code })
-    for (let item of a.data) {
-        const { Address } = item;
-        const description = Address.split(",");
-        const index = description[0]
-        await listPointsBoxbery.create({
-            Code: item.Code,
-            Name: item.Name,
-            Index: index,
-            Address: item.Address,
-            Phone: item.Phone,
-            WorkShedule: item.WorkShedule,
-            TripDescription: item.TripDescription,
-            DeliveryPeriod: item.DeliveryPeriod,
-            CityCode: item.CityCode,
-            CityName: item.CityName,
-            TariffZone: item.TariffZone,
-            Settlement: item.Settlement,
-            Area: item.Area,
-            Country: item.Country,
-            GPS: item.GPS,
-            AddressReduce: item.AddressReduce,
-            OnlyPrepaidOrders: item.OnlyPrepaidOrders,
-            Acquiring: item.Acquiring,
-            DigitalSignature: item.DigitalSignature,
-            CountryCode: item.CountryCode,
-            NalKD: item.NalKD,
-            Metro: item.Metro,
-            TypeOfOffice: item.TypeOfOffice,
-            VolumeLimit: item.VolumeLimit,
-            LoadLimit: item.LoadLimit,
-            Postamat: item.Postamat,
-        })
-    }*/
-
-
-    //console.log(a.data[0])
-}
-
-
-async function test() {
-    let aaa = await listPointsBoxbery.findOne({ Index: "675000" }).lean()
-    console.log(aaa)
-}
-test()
-//getSumDelivery()
 start()
