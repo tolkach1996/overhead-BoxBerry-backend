@@ -33,13 +33,126 @@ const start = () => {
     }
 }
 
-
+/*for (let item of table) {
+        for (let k of item.orders) {
+            let newStreing = {
+                "Дата посылки (ГГГГММДД)": item.dataPackage,
+                "Номер заказа в ИМ": k.number,
+                "Объявленная стоимость": k.declaredSum,
+                "Сумма к оплате": item.paySum,
+                "Стоимость доставки": item.deliverySum,
+                "Дата передачи ЗП": k.dataTransfer,
+                "Номер паллеты": '',
+                "Номер акта передачи": '',
+                "Вид доставки": item.typeTransfer,
+                "Код ПВЗ": item.codePWZ,
+                "Код пункта поступления": item.departurePointCode,
+                "ФИО": item.fio,
+                "Номер телефона": item.phone,
+                "Доп. номер телефона": '',
+                "E-mail для оповещений": '',
+                "Наименование организации": '',
+                "Адрес": '',
+                "ИНН": '',
+                "КПП": '',
+                "Расчетный счет": '',
+                "Наименование банка": '',
+                "Кор. счет": '',
+                "БИК": '',
+                "Вес 1-ого места": item.weightPackage,
+                "Вес 2-ого места": '',
+                "Вес 3-ого места": '',
+                "Вес 4-ого места": '',
+                "Вес 5-ого места": '',
+                "Индекс": '',
+                "Город": '',
+                "Адрес получателя": '',
+                "Время доставки, от (ЧЧ:ММ)": '',
+                "Время доставки, до (ЧЧ:ММ)": '',
+                "Дата доставки (ГГГГММДД)": '',
+                "Комментарий": '',
+                "Баркод 1-го места": '',
+                "Баркод 2-го места": '',
+                "Баркод 3-го места": '',
+                "баркод 4-го места": '',
+                "Баркод 5-го места": '',
+                "Тип отпраления ПР": '',
+                "Хрупкий груз для ПР": '',
+                "Оптимизация тарифа ПР": '',
+                "Строгий тип отправления ПР": '',
+                "Длина, см": '',
+                "Ширина, см": '',
+                "Высота, см": '',
+                "Тип упаковки": '',
+                "Запретить изменение упаковки": '',
+                "Тип выдачи": '',
+            }
+            table2.push(newStreing)
+        }
+    }*/
 app.post('/downloadConsigmentExcel', (req, res) => {
     const workbook = xlsx.utils.book_new();
-    const worksheet = xlsx.utils.json_to_sheet(req.body?.data)
+    let table = []
+    for (let item of req.body?.data) {
+        for (let k of item.orders) {
+            let newStreing = {
+                "Дата посылки (ГГГГММДД)": item.dataPackage,
+                "Номер заказа в ИМ": k.number,
+                "Объявленная стоимость": k.declaredSum,
+                "Сумма к оплате": item.paySum,
+                "Стоимость доставки": item.deliverySum,
+                "Дата передачи ЗП": k.dataTransfer,
+                "Номер паллеты": '',
+                "Номер акта передачи": '',
+                "Вид доставки": item.typeTransfer,
+                "Код ПВЗ": item.codePWZ,
+                "Код пункта поступления": item.departurePointCode,
+                "ФИО": item.fio,
+                "Номер телефона": item.phone,
+                "Доп. номер телефона": '',
+                "E-mail для оповещений": '',
+                "Наименование организации": '',
+                "Адрес": '',
+                "ИНН": '',
+                "КПП": '',
+                "Расчетный счет": '',
+                "Наименование банка": '',
+                "Кор. счет": '',
+                "БИК": '',
+                "Вес 1-ого места": item.weightPackage,
+                "Вес 2-ого места": '',
+                "Вес 3-ого места": '',
+                "Вес 4-ого места": '',
+                "Вес 5-ого места": '',
+                "Индекс": '',
+                "Город": '',
+                "Адрес получателя": '',
+                "Время доставки, от (ЧЧ:ММ)": '',
+                "Время доставки, до (ЧЧ:ММ)": '',
+                "Дата доставки (ГГГГММДД)": '',
+                "Комментарий": '',
+                "Баркод 1-го места": '',
+                "Баркод 2-го места": '',
+                "Баркод 3-го места": '',
+                "баркод 4-го места": '',
+                "Баркод 5-го места": '',
+                "Тип отпраления ПР": '',
+                "Хрупкий груз для ПР": '',
+                "Оптимизация тарифа ПР": '',
+                "Строгий тип отправления ПР": '',
+                "Длина, см": '',
+                "Ширина, см": '',
+                "Высота, см": '',
+                "Тип упаковки": '',
+                "Запретить изменение упаковки": '',
+                "Тип выдачи": '',
+            }
+            table.push(newStreing)
+        }
+    }
+    const worksheet = xlsx.utils.json_to_sheet(table)
     xlsx.utils.book_append_sheet(workbook, worksheet)
     xlsx.writeFile(workbook, `files/test.xlsx`);
-
     const pathFile = path.join(__dirname, 'files', 'test.xlsx');
     res.sendFile(pathFile);
 })
@@ -66,7 +179,6 @@ app.post('/postSelectedFilters', async (req, res) => {
                 project: []
             },
             expand: 'agent',
-            //limit: '1'
         }
         for (item of selectedMetadata) {
             options.filter.state.name.push(item.name)
@@ -79,37 +191,53 @@ app.post('/postSelectedFilters', async (req, res) => {
         todayDate = todayDate.getFullYear() + String(todayDate.getMonth() + 1).padStart(2, '0') + String(todayDate.getDate()).padStart(2, '0')
         const response = []
         for (item of getCustomerOrder.rows) {
-            let description = item.description.split(/\s* \s*/);
-            let isPVZ = description.findIndex(item => item == 'ПВЗ')
-            let index;
-            let deliverySum;
-            let paySum;
-            let getPointBoxbery;
-            if (isPVZ != -1) {
-                index = description[isPVZ + 2]
-                index = index.replace(/,*$/, "").replace(/^\,*/, "")
-                getPointBoxbery = await listPointsBoxbery.findOne({ Index: `${index}` }).lean()
-                deliverySum = await axios.get(`https://api.boxberry.ru/json.php?token=${boxberryToken}&method=DeliveryCosts&targetstart=010&target=${getPointBoxbery.Code}&weight=3000`)
-                paySum = Math.ceil(deliverySum.data.price / 50) * 50
-                deliverySum = deliverySum.data.price
-                getPointBoxbery = getPointBoxbery.Code
-            } else continue
             let declaredSum = item.sum / 100 < 10000 ? 5 : item.sum / 100;
-            let object = {
-                dataPackage: todayDate,
-                number: item.name,
-                declaredSum: declaredSum,
-                paySum: paySum,
-                deliverySum: deliverySum,
-                dataTransfer: todayDate,
-                typeTransfer: '1',
-                codePWZ: getPointBoxbery,
-                departurePointCode: '010',
-                fio: item.agent.name,
-                phone: item.agent.phone,
-                weightPackage: '3000'
+            if (response.find(order => order.fio == item.agent.name)) {
+                let order = {
+                    fio: item.agent.name,
+                    number: item.name,
+                    declaredSum: declaredSum,
+                    dataTransfer: todayDate,
+                };
+                response[response.findIndex(order => order.fio == item.agent.name)].orders.push(order)
             }
-            response.push(object)
+            else {
+                let description = item.description.split(/\s* \s*/);
+                let isPVZ = description.findIndex(item => item == 'ПВЗ')
+                let index;
+                let deliverySum;
+                let paySum;
+                let getPointBoxbery;
+                if (isPVZ != -1) {
+                    index = description[isPVZ + 2]
+                    index = index.replace(/,*$/, "").replace(/^\,*/, "")
+                    getPointBoxbery = await listPointsBoxbery.findOne({ Index: `${index}` }).lean()
+                    deliverySum = await axios.get(`https://api.boxberry.ru/json.php?token=${boxberryToken}&method=DeliveryCosts&targetstart=010&target=${getPointBoxbery.Code}&weight=3000`)
+                    paySum = Math.ceil(deliverySum.data.price / 50) * 50
+                    deliverySum = deliverySum.data.price
+                    getPointBoxbery = getPointBoxbery.Code
+                } else continue
+                let object = {
+                    fio: item.agent.name,
+                    phone: item.agent.phone,
+                    dataPackage: todayDate,
+                    typeTransfer: '1',
+                    deliverySum: deliverySum,
+                    paySum: paySum,
+                    departurePointCode: '010',
+                    codePWZ: getPointBoxbery,
+                    weightPackage: '3000',
+                    orders: [
+                        {
+                            fio: item.agent.name,
+                            number: item.name,
+                            declaredSum: declaredSum,
+                            dataTransfer: todayDate,
+                        }
+                    ]
+                }
+                response.push(object)
+            }
         }
         res.json(response)
     }
@@ -131,4 +259,9 @@ async function getFilterProject() {
 }
 
 
+
 start()
+
+/*
+
+*/
