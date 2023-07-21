@@ -7,7 +7,7 @@ const { initialMongoConnection } = require('./utils/mongoose')
 const fileupload = require('express-fileupload')
 const path = require('path');
 const { fetch } = require('undici')
-const listPointsBoxbery = require('./models/ListPointsBoxbery')
+const boxberryModel = require('./models/boxberry.model')
 require('dotenv').config()
 initialMongoConnection()
 
@@ -161,7 +161,7 @@ app.post('/postSelectedFilters', async (req, res) => {
                 if (isPVZ != -1) {
                     index = description[isPVZ + 2]
                     index = index.replace(/,*$/, "").replace(/^\,*/, "")
-                    getPointBoxbery = await listPointsBoxbery.findOne({ Index: `${index}` }).lean()
+                    getPointBoxbery = await boxberryModel.findOne({ Index: `${index}` }).lean()
                     deliverySum = await axios.get(`https://api.boxberry.ru/json.php?token=${boxberryToken}&method=DeliveryCosts&targetstart=010&target=${getPointBoxbery.Code}&weight=3000`)
                     paySum = Math.ceil(deliverySum.data.price / 50) * 50
                     deliverySum = deliverySum.data.price
@@ -227,6 +227,7 @@ app.post('/sendConsigmentBoxBerry', async (req, res) => {
             }
         }
         let res = await axios.post(`https://api.boxberry.ru/json.php?`, options)
+        console.log(res.data)
     }
 })
 
