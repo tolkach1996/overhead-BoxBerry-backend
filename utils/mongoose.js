@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-module.exports.initialMongoConnection = () => {
+function initialMongoConnection() {
     mongoose.Promise = global.Promise;
     const options = {
         socketTimeoutMS: 30000,
@@ -18,3 +18,5 @@ module.exports.initialMongoConnection = () => {
         })
     mongoose.connect(process.env.MONGO_URL, options);
 }
+
+module.exports = initialMongoConnection;
