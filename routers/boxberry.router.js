@@ -1,7 +1,7 @@
-const express = require('express')
+const express = require('express');
 const router = express.Router();
-const { sendConsigmentBoxBerry } = require('../controllers/boxberry.controller')
+const { sendConsigmentBoxBerry } = require('../controllers/boxberry.controller');
 
-router.post('/consigment', sendConsigmentBoxBerry)
+router.post('/consigment', sendConsigmentBoxBerry);
 
-module.exports = router
+module.exports = router;

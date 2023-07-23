@@ -1,9 +1,9 @@
-const express = require('express')
+const express = require('express');
 const router = express.Router();
-const { downloadConsigmentExcel } = require('../controllers/excel.controller')
+const { downloadConsigmentExcel } = require('../controllers/excel.controller');
 
 
-router.post('/download', downloadConsigmentExcel)
+router.post('/download', downloadConsigmentExcel);
 
 
-module.exports = router
+module.exports = router;

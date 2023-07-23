@@ -1,8 +1,8 @@
-const express = require('express')
+const express = require('express');
 const router = express.Router();
-const { postSelectedFilters } = require('../controllers/ms.controller')
+const { postSelectedFilters } = require('../controllers/ms.controller');
 
-router.post('/orders', postSelectedFilters)
+router.post('/orders', postSelectedFilters);
 
 
-module.exports = router
+module.exports = router;

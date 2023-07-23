@@ -1,20 +1,20 @@
-const xlsx = require('xlsx')
+const xlsx = require('xlsx');
 const path = require('path');
 
 
 module.exports.downloadConsigmentExcel = async (req, res) => {
     try {
         const workbook = xlsx.utils.book_new();
-        let table = []
+        let table = [];
         for (let item of req.body?.data) {
             let declaredSum = 0;
             if (item.orders.length > 1) {
                 for (let order of item.orders) {
-                    declaredSum += order.declaredSum
+                    declaredSum += order.declaredSum;
                 }
-                if (declaredSum < 10000) declaredSum = 5
+                if (declaredSum < 10000) declaredSum = 5;
             }
-            else declaredSum = 5
+            else declaredSum = 5;
             let newStreing = {
                 "Дата посылки (ГГГГММДД)": item.dataPackage,
                 "Номер заказа в ИМ": item.orders[0].number,
@@ -67,16 +67,16 @@ module.exports.downloadConsigmentExcel = async (req, res) => {
                 "Запретить изменение упаковки": '',
                 "Тип выдачи": '',
             }
-            table.push(newStreing)
+            table.push(newStreing);
         }
-        const worksheet = xlsx.utils.json_to_sheet(table)
-        xlsx.utils.book_append_sheet(workbook, worksheet)
+        const worksheet = xlsx.utils.json_to_sheet(table);
+        xlsx.utils.book_append_sheet(workbook, worksheet);
         xlsx.writeFile(workbook, `files/test.xlsx`);
         const pathFile = path.join(__dirname, '../files', 'test.xlsx');
         res.sendFile(pathFile);
     }
     catch (e) {
-        console.error(e)
-        res.status(500)
+        console.error(e);
+        res.status(500);
     }
 }
