@@ -12,7 +12,7 @@ const boxberryToken = process.env.Boxbery_TOKEN
 const ms = Moysklad({ msToken, fetch });
 
 
-module.exports.postSelectedFilters = async (req, res) => {
+module.exports.postSelectedFilters = async (req, res, next) => {
     try {
         const { selectedMetadata, selectedProjects } = req.body.data;
         const options = {
@@ -85,10 +85,9 @@ module.exports.postSelectedFilters = async (req, res) => {
                 response.push(object);
             }
         }
-        res.json(response);
+        res.status(200).json(response);
     }
     catch (e) {
-        console.error(e);
-        res.status(500);
+        next(e);
     }
 }

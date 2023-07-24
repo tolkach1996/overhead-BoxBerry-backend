@@ -1,18 +1,13 @@
 const express = require('express');
 const cors = require('cors');
-const cron = require('cron');
 const fileupload = require('express-fileupload');
-const { initialMongoConnection } = require('./utils/mongoose');
 
-const routerExcel = require('./routers/excel.router');
-const routerFilter = require('./routers/filter.router');
-const routerMs = require('./routers/ms.router');
-const routerBoxBerry = require('./routers/boxberry.router');
-
-const { updateListPointBoxberry } = require('./services/points.service');
+const { errorMiddleware } = require('./middleware');
+const { boxberryRouter, excelRouter, filterRouter, moySkladRouter } = require('./routers');
+const { mongoInitial, cronJob } = require('./utils');
 
 require('dotenv').config();
-initialMongoConnection();
+mongoInitial();
 
 const PORT = process.env.PORT || 5000
 
@@ -20,19 +15,14 @@ const app = express();
 app.use(cors({ origin: "*" }));
 app.use(express.json());
 app.use(fileupload());
-app.use('/excel', routerExcel);
-app.use('/filters', routerFilter);
-app.use('/ms', routerMs);
-app.use('/boxberry', routerBoxBerry);
+app.use('/excel', excelRouter);
+app.use('/filters', filterRouter);
+app.use('/ms', moySkladRouter);
+app.use('/boxberry', boxberryRouter);
 
-const job = new cron.CronJob(
-    '0 */2 * * *',
-    updateListPointBoxberry
-);
-
-
+app.use(errorMiddleware);
 
 app.listen(PORT, () => {
     console.log(`server started on port ${PORT}`);
-    //job.start();
+    cronJob.start();
 });
