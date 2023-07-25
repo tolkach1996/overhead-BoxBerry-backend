@@ -1,7 +1,7 @@
 const axios = require("axios");
 require('dotenv').config();
 
-const boxberryToken = process.env.Boxbery_TOKEN
+const boxberryToken = process.env.BOXBERRY_TOKEN
 
 
 module.exports.sendConsigmentBoxBerry = async (req, res) => {

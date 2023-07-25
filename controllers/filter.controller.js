@@ -1,6 +1,4 @@
 const { getFilterMetadata, getFilterProject } = require('../services/filter.service');
-require('dotenv').config();
-
 
 module.exports.getFilterData = async (req, res) => {
     try {

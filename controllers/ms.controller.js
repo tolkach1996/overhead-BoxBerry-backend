@@ -7,7 +7,7 @@ require('dotenv').config();
 
 
 const msToken = process.env.MOYSKLAD_TOKEN
-const boxberryToken = process.env.Boxbery_TOKEN
+const boxberryToken = process.env.BOXBERRY_TOKEN
 
 const ms = Moysklad({ msToken, fetch });
 
@@ -64,7 +64,7 @@ module.exports.postSelectedFilters = async (req, res) => {
                 } else continue
                 let object = {
                     fio: item.agent.name,
-                    phone: item.agent.phone,
+                    phone: String(item.agent.phone).replace(/\D/g, ''),
                     dataPackage: todayDate,
                     typeTransfer: '1',
                     deliverySum: deliverySum,
