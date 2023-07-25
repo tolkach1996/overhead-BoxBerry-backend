@@ -2,6 +2,10 @@ const express = require('express');
 const cors = require('cors');
 const cron = require('cron');
 const fileupload = require('express-fileupload');
+const serveStatic = require('serve-static');
+const history = require('connect-history-api-fallback')
+const path = require('path');
+
 const { initialMongoConnection } = require('./utils/mongoose');
 
 const routerExcel = require('./routers/excel.router');
@@ -14,10 +18,20 @@ const { updateListPointBoxberry } = require('./services/points.service');
 require('dotenv').config();
 initialMongoConnection();
 
-const PORT = process.env.PORT || 5000
+const PORT = process.env.PORT || 5000;
+const IS_PRODUCTION = process.env.IS_PRODUCTION == 'true';
 
 const app = express();
-app.use(cors({ origin: "*" }));
+
+if (IS_PRODUCTION) {
+    console.log('PROD...');
+    app.use(history())
+    app.use(serveStatic(path.resolve(__dirname, 'client')))
+} else {
+    console.log('DEV ...');
+    app.use(cors({ origin: "*" }));
+}
+
 app.use(express.json());
 app.use(fileupload());
 app.use('/excel', routerExcel);
@@ -34,6 +48,6 @@ const job = new cron.CronJob(
 
 app.listen(PORT, async () => {
     console.log(`server started on port ${PORT}`);
-    await updateListPointBoxberry();
-    job.start();
+    /* await updateListPointBoxberry();
+    job.start(); */
 });
