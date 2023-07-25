@@ -48,6 +48,6 @@ const job = new cron.CronJob(
 
 app.listen(PORT, async () => {
     console.log(`server started on port ${PORT}`);
-    /* await updateListPointBoxberry();
-    job.start(); */
+    await updateListPointBoxberry();
+    job.start();
 });
