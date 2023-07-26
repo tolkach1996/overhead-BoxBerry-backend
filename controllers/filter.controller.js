@@ -1,15 +1,12 @@
 const { getFilterMetadata, getFilterProject } = require('../services/filter.service');
-require('dotenv').config();
 
-
-module.exports.getFilterData = async (req, res) => {
+module.exports.getFilterData = async (req, res, next) => {
     try {
-        let metadata = await getFilterMetadata();
-        let projects = await getFilterProject();
-        res.json({ metadata, projects });
+        const metadata = await getFilterMetadata();
+        const projects = await getFilterProject();
+        res.status(200).json({ metadata, projects });
     }
     catch (e) {
-        console.error(e);
-        res.status(500);
+        next(e);
     }
 }

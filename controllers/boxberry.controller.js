@@ -4,7 +4,7 @@ require('dotenv').config();
 const boxberryToken = process.env.Boxbery_TOKEN
 
 
-module.exports.sendConsigmentBoxBerry = async (req, res) => {
+module.exports.sendConsigmentBoxBerry = async (req, res, next) => {
     try {
         const table = [];
         for (let item of req.body.data) {
@@ -45,10 +45,9 @@ module.exports.sendConsigmentBoxBerry = async (req, res) => {
                 table.push({ res: "Ошибка", err: data.err });
             }
         }
-        res.json(table)
+        res.status(200).json(table);
     }
     catch (e) {
-        console.error(e);
-        res.status(500).json({ ok: false });
+        next(e);
     }
 }

@@ -2,7 +2,7 @@ const xlsx = require('xlsx');
 const path = require('path');
 
 
-module.exports.downloadConsigmentExcel = async (req, res) => {
+module.exports.downloadConsigmentExcel = async (req, res, next) => {
     try {
         const workbook = xlsx.utils.book_new();
         let table = [];
@@ -76,7 +76,6 @@ module.exports.downloadConsigmentExcel = async (req, res) => {
         res.sendFile(pathFile);
     }
     catch (e) {
-        console.error(e);
-        res.status(500);
+        next(e);
     }
 }
