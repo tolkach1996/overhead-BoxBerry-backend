@@ -56,6 +56,7 @@ module.exports.postSelectedFilters = async (req, res) => {
                 if (isPVZ != -1) {
                     index = description[isPVZ + 2]
                     index = index.replace(/,*$/, "").replace(/^\,*/, "");
+                    console.log(index)
                     getPointBoxbery = await boxberryModel.findOne({ Index: `${index}` }).lean();
                     deliverySum = await axios.get(`https://api.boxberry.ru/json.php?token=${boxberryToken}&method=DeliveryCosts&targetstart=010&target=${getPointBoxbery.Code}&weight=3000`);
                     paySum = Math.ceil(deliverySum.data.price / 50) * 50;
