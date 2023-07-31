@@ -5,6 +5,7 @@ const fileupload = require('express-fileupload');
 const { errorMiddleware } = require('./middleware');
 const { boxberryRouter, excelRouter, filterRouter, moySkladRouter } = require('./routers');
 const { mongoInitial, cronJob } = require('./utils');
+const { updateListPointBoxberry } = require('./services/points.service');
 
 require('dotenv').config();
 mongoInitial();
@@ -22,7 +23,8 @@ app.use('/boxberry', boxberryRouter);
 
 app.use(errorMiddleware);
 
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
     console.log(`server started on port ${PORT}`);
     cronJob.start();
+    //await updateListPointBoxberry();
 });

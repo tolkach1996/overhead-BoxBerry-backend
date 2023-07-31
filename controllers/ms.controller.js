@@ -7,14 +7,14 @@ require('dotenv').config();
 
 
 const msToken = process.env.MOYSKLAD_TOKEN
-const boxberryToken = process.env.Boxbery_TOKEN
+const boxberryToken = process.env.BOXBERRY_TOKEN;
 
 const ms = Moysklad({ msToken, fetch });
 
 
 module.exports.postSelectedFilters = async (req, res, next) => {
     try {
-        const { selectedMetadata, selectedProjects } = req.body.data;
+        const { selectedMetadata, selectedProjects } = req.body;
         const options = {
             filter: {
                 state: {
@@ -30,10 +30,12 @@ module.exports.postSelectedFilters = async (req, res, next) => {
         for (item of selectedProjects) {
             options.filter.project.push('https://online.moysklad.ru/api/remap/1.2/entity/project/' + item.id);
         }
+
         const getCustomerOrder = await ms.GET('entity/customerorder', options);
         let todayDate = new Date();
         todayDate = todayDate.getFullYear() + String(todayDate.getMonth() + 1).padStart(2, '0') + String(todayDate.getDate()).padStart(2, '0');
         const response = [];
+
         for (item of getCustomerOrder.rows) {
             let declaredSum = item.sum / 100 < 10000 ? 5 : item.sum / 100;
             if (response.find(order => order.fio == item.agent.name)) {
@@ -47,17 +49,17 @@ module.exports.postSelectedFilters = async (req, res, next) => {
                 console.log(response)
             }
             else {
-                let description = item.description.split(/\s* \s*/);
+                let description = item.description.split(' ');
+
                 let isPVZ = description.findIndex(item => item == 'ПВЗ')
                 let index;
                 let deliverySum;
                 let paySum;
                 let getPointBoxbery;
                 if (isPVZ != -1) {
-                    index = description[isPVZ + 2]
-                    index = index.replace(/,*$/, "").replace(/^\,*/, "");
-                    console.log(index)
-                    getPointBoxbery = await boxberryModel.findOne({ Index: `${index}` }).lean();
+                    index = description.map(item => item.replace(/\D/g, '')).filter(item => item.length === 6);
+
+                    getPointBoxbery = await boxberryModel.findOne({ Index: { $in: index } }).lean();
                     deliverySum = await axios.get(`https://api.boxberry.ru/json.php?token=${boxberryToken}&method=DeliveryCosts&targetstart=010&target=${getPointBoxbery.Code}&weight=3000`);
                     paySum = Math.ceil(deliverySum.data.price / 50) * 50;
                     deliverySum = deliverySum.data.price;
