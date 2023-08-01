@@ -11,6 +11,15 @@ const boxberryToken = process.env.BOXBERRY_TOKEN;
 
 const ms = Moysklad({ msToken, fetch });
 
+const projectUrl = 'https://online.moysklad.ru/api/remap/1.2/entity/project/';
+
+function formatTelephone(tel) {
+    const numberTel = tel.replace(/\D/g, '');
+    if (numberTel.charAt(0) != 7) {
+        return `7${numberTel.substring(1)}`;
+    }
+    return numberTel;
+}
 
 module.exports.postSelectedFilters = async (req, res, next) => {
     try {
@@ -22,72 +31,88 @@ module.exports.postSelectedFilters = async (req, res, next) => {
                 },
                 project: []
             },
-            expand: 'agent',
+            expand: 'agent, project',
         }
-        for (item of selectedMetadata) {
-            options.filter.state.name.push(item.name);
-        }
-        for (item of selectedProjects) {
-            options.filter.project.push('https://online.moysklad.ru/api/remap/1.2/entity/project/' + item.id);
-        }
+        options.filter.state.name = selectedMetadata.map(item => item.name);
+        options.filter.project = selectedProjects.map(item => (projectUrl + item.id));
 
-        const getCustomerOrder = await ms.GET('entity/customerorder', options);
-        let todayDate = new Date();
-        todayDate = todayDate.getFullYear() + String(todayDate.getMonth() + 1).padStart(2, '0') + String(todayDate.getDate()).padStart(2, '0');
+        let getCustomerOrder = await ms.GET('entity/customerorder', options);
+        const todayDate = new Date().toLocaleDateString('ru-RU', { year: "numeric", month: 'numeric', day: 'numeric' }).split('.').reverse().join('');
         const response = [];
 
-        for (item of getCustomerOrder.rows) {
-            let declaredSum = item.sum / 100 < 10000 ? 5 : item.sum / 100;
-            if (response.find(order => order.fio == item.agent.name)) {
-                let order = {
-                    fio: item.agent.name,
-                    number: item.name,
-                    declaredSum: declaredSum,
-                    dataTransfer: todayDate,
-                };
-                response[response.findIndex(order => order.fio == item.agent.name)].orders.push(order);
-                console.log(response)
-            }
-            else {
-                let description = item.description.split(' ');
+        const pages = Math.ceil(getCustomerOrder.meta.size / getCustomerOrder.meta.limit);
 
-                let isPVZ = description.findIndex(item => item == 'ПВЗ')
-                let index;
-                let deliverySum;
-                let paySum;
-                let getPointBoxbery;
-                if (isPVZ != -1) {
-                    index = description.map(item => item.replace(/\D/g, '')).filter(item => item.length === 6);
+        for (let i = 0; i < pages; i++) {
+            for (let item of getCustomerOrder.rows) {
 
-                    getPointBoxbery = await boxberryModel.findOne({ Index: { $in: index } }).lean();
-                    deliverySum = await axios.get(`https://api.boxberry.ru/json.php?token=${boxberryToken}&method=DeliveryCosts&targetstart=010&target=${getPointBoxbery.Code}&weight=3000`);
-                    paySum = Math.ceil(deliverySum.data.price / 50) * 50;
-                    deliverySum = deliverySum.data.price;
-                    getPointBoxbery = getPointBoxbery.Code;
-                } else continue
-                let object = {
-                    fio: item.agent.name,
-                    phone: item.agent.phone,
-                    dataPackage: todayDate,
-                    typeTransfer: '1',
-                    deliverySum: deliverySum,
-                    paySum: paySum,
-                    departurePointCode: '010',
-                    codePWZ: getPointBoxbery,
-                    weightPackage: '3000',
-                    reqStatus: '',
-                    orders: [
-                        {
-                            fio: item.agent.name,
-                            number: item.name,
-                            declaredSum: declaredSum,
-                            dataTransfer: todayDate,
-                        }
-                    ]
+                const partsComment = item.description.split(' ');
+                const isBoxberry = !!partsComment.find(item => item == 'ПВЗ');
+    
+                if (isBoxberry) {
+                    const declaredSum = item.sum / 100 < 10000 ? 5 : item.sum / 100;
+                    const sumOrder = Number(item.sum / 100);
+                    const index = partsComment.map(item => item.replace(/\D/g, '')).filter(item => item.length === 6);
+                    const pointsBoxberry = await boxberryModel.find({ Index: { $in: index } }, { Code: 1, Address: 1 }).lean();
+                    const pointBoxberry = pointsBoxberry.find(point => {
+                        return item.description.includes(point.Address);
+                    });
+                    if (!pointBoxberry) {
+                        console.error('ERROR');
+                    }
+                    let deliverySum = null;
+                    let codePoint = null;
+                    let paySum = null;
+                    if (pointBoxberry) {
+                        codePoint = pointBoxberry.Code;
+                        const fetchDeliveryBoxberry = await axios.get(`https://api.boxberry.ru/json.php?token=${boxberryToken}&method=DeliveryCosts&targetstart=010&target=${codePoint}&weight=3000`);
+                        deliverySum = fetchDeliveryBoxberry?.data?.price;
+                        paySum = deliverySum ? Math.ceil(deliverySum / 50) * 50 : null;
+                    }
+    
+                    const rowData = {
+                        id: item.id,
+                        project: item?.project?.name || null,
+                        fio: item.agent.name,
+                        numberOrder: item.name,
+                        sumOrder,
+                        comment: item.description,
+                        phone: formatTelephone(item.agent.phone),
+                        dataPackage: todayDate,
+                        typeTransfer: '1',
+                        deliverySum: deliverySum,
+                        declaredSum,
+                        paySum: paySum,
+                        departurePointCode: '010',
+                        codePWZ: codePoint,
+                        weightPackage: '3000',
+                    }
+    
+                    const order = response.find(item => {
+                        const isSameName = String(item.fio).toLowerCase() == String(rowData.fio).toLowerCase();
+                        const isSamePhone = item.phone == rowData.phone;
+    
+                        return isSameName || isSamePhone;
+                    })
+    
+                    if (order) {
+                        order.orders.push(rowData);
+                    } else {
+                        rowData.orders = [JSON.parse(JSON.stringify(rowData))];
+                        response.push(rowData);
+                    }
                 }
-                response.push(object);
             }
+
+            options.offset = i * 100 + 100;
+            if (i !== pages - 1) getCustomerOrder = await ms.GET('entity/customerorder', options);
         }
+
+        response.sort((a, b) => {
+            if (a.fio > b.fio) return 1;
+            if (a.fio < b.fio) return -1;
+            return 0;
+        })
+
         res.status(200).json(response);
     }
     catch (e) {
