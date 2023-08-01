@@ -47,7 +47,7 @@ module.exports.postSelectedFilters = async (req, res, next) => {
 
                 const partsComment = item.description.split(' ');
                 const isBoxberry = !!partsComment.find(item => item == 'ПВЗ');
-    
+
                 if (isBoxberry) {
                     const declaredSum = item.sum / 100 < 10000 ? 5 : item.sum / 100;
                     const sumOrder = Number(item.sum / 100);
@@ -68,7 +68,7 @@ module.exports.postSelectedFilters = async (req, res, next) => {
                         deliverySum = fetchDeliveryBoxberry?.data?.price;
                         paySum = deliverySum ? Math.ceil(deliverySum / 50) * 50 : null;
                     }
-    
+
                     const rowData = {
                         id: item.id,
                         project: item?.project?.name || null,
@@ -86,14 +86,14 @@ module.exports.postSelectedFilters = async (req, res, next) => {
                         codePWZ: codePoint,
                         weightPackage: '3000',
                     }
-    
+
                     const order = response.find(item => {
                         const isSameName = String(item.fio).toLowerCase() == String(rowData.fio).toLowerCase();
                         const isSamePhone = item.phone == rowData.phone;
-    
+
                         return isSameName || isSamePhone;
                     })
-    
+
                     if (order) {
                         order.orders.push(rowData);
                     } else {
