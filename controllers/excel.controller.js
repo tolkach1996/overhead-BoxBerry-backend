@@ -2,7 +2,7 @@ const xlsx = require('xlsx');
 const path = require('path');
 
 
-module.exports.downloadConsigmentExcel = async (req, res) => {
+module.exports.downloadConsigmentExcel = async (req, res, next) => {
     try {
         const workbook = xlsx.utils.book_new();
         let table = [];
@@ -17,7 +17,7 @@ module.exports.downloadConsigmentExcel = async (req, res) => {
             else declaredSum = 5;
             let newStreing = {
                 "Дата посылки (ГГГГММДД)": item.dataPackage,
-                "Номер заказа в ИМ": item.orders[0].number,
+                "Номер заказа в ИМ": item.numberOrder,
                 "Объявленная стоимость": declaredSum,
                 "Сумма к оплате": item.paySum,
                 "Стоимость доставки": item.deliverySum,
@@ -76,7 +76,6 @@ module.exports.downloadConsigmentExcel = async (req, res) => {
         res.sendFile(pathFile);
     }
     catch (e) {
-        console.error(e);
-        res.status(500);
+        next(e);
     }
 }
