@@ -26,5 +26,5 @@ app.use(errorMiddleware);
 app.listen(PORT, async () => {
     console.log(`server started on port ${PORT}`);
     cronJob.start();
-    //await updateListPointBoxberry();
+    await updateListPointBoxberry();
 });
