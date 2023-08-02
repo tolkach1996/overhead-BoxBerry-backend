@@ -20,7 +20,7 @@ module.exports.sendConsigmentBoxBerry = async (req, res, next) => {
                 token: boxberryToken,
                 method: "ParselCreate",
                 sdata: {
-                    order_id: item.orders[0].number,
+                    order_id: item.numberOrder,
                     price: declaredSum,
                     payment_sum: item.paySum,
                     delivery_sum: item.deliverySum,
