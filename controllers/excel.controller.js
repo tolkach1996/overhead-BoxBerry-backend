@@ -17,7 +17,7 @@ module.exports.downloadConsigmentExcel = async (req, res, next) => {
             else declaredSum = 5;
             let newStreing = {
                 "Дата посылки (ГГГГММДД)": item.dataPackage,
-                "Номер заказа в ИМ": item.orders[0].number,
+                "Номер заказа в ИМ": item.numberOrder,
                 "Объявленная стоимость": declaredSum,
                 "Сумма к оплате": item.paySum,
                 "Стоимость доставки": item.deliverySum,
