@@ -8,14 +8,12 @@ module.exports.sendConsigmentBoxBerry = async (req, res, next) => {
     try {
         const table = [];
         for (let item of req.body.data) {
-            let declaredSum = 0;
-            if (item.orders.length > 1) {
-                for (let order of item.orders) {
-                    declaredSum += order.declaredSum;
-                }
-                if (declaredSum < 10000) declaredSum = 5;
-            }
-            else declaredSum = 5;
+            
+            let declaredSum = item.orders.reduce((pre, cur) => {
+                return pre += Number(cur.declaredSum);
+            }, 0);
+            if (declaredSum < 10000) declaredSum = 5;
+
             let options = {
                 token: boxberryToken,
                 method: "ParselCreate",
