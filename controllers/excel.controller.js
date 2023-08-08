@@ -1,6 +1,8 @@
 const xlsx = require('xlsx');
 const path = require('path');
 
+const SitiesService = require('../services/cities.service');
+
 
 module.exports.downloadConsigmentExcel = async (req, res, next) => {
     try {
@@ -73,6 +75,29 @@ module.exports.downloadConsigmentExcel = async (req, res, next) => {
         res.sendFile(pathFile);
     }
     catch (e) {
+        next(e);
+    }
+}
+module.exports.downloadPriceList = async (_, res, next) => {
+    try {
+        const cities = await SitiesService.getAll();
+
+        const array = cities.map(item => {
+            return {
+                'Город': item.name,
+                'Стоимость доставки': item.price
+            }
+        })
+
+        const workbook = xlsx.utils.book_new();
+        const worksheet = xlsx.utils.json_to_sheet(array);
+        xlsx.utils.book_append_sheet(workbook, worksheet);
+        xlsx.writeFile(workbook, `files/priceList.xlsx`);
+        const pathFile = path.join(__dirname, '../files', 'priceList.xlsx');
+        
+        res.sendFile(pathFile);
+
+    } catch(e) {
         next(e);
     }
 }

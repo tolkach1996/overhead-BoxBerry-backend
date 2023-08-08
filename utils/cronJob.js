@@ -1,9 +1,21 @@
 const cron = require('cron');
 const { updateListPointBoxberry } = require('../services/points.service');
+const SitiesService = require('../services/cities.service');
 
-const cronJob = new cron.CronJob(
-    '0 */2 * * *',
+const pointLists = new cron.CronJob(
+    '0 */1 * * *',
     updateListPointBoxberry
 );
+const cityList = new cron.CronJob(
+    '0 3 */1 * *',
+    async () => {
+        await SitiesService.updateFromBoxBerry();
+    }
+)
 
-module.exports = cronJob;
+function startCron() {
+    pointLists.start();
+    cityList.start();
+}
+
+module.exports = startCron;

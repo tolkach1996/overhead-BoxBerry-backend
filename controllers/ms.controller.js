@@ -1,13 +1,13 @@
-const axios = require("axios");
 const Moysklad = require('moysklad');
 const { fetch } = require('undici');
 const boxberryModel = require('../models/boxberry.model');
+
+const CitiesService = require('../services/cities.service');
 
 require('dotenv').config();
 
 
 const msToken = process.env.MOYSKLAD_TOKEN
-const boxberryToken = process.env.BOXBERRY_TOKEN;
 
 const ms = Moysklad({ msToken, fetch });
 
@@ -52,7 +52,7 @@ module.exports.postSelectedFilters = async (req, res, next) => {
                     const declaredSum = item.sum / 100 < 10000 ? 5 : item.sum / 100;
                     const sumOrder = Number(item.sum / 100);
                     const index = partsComment.map(item => item.replace(/\D/g, '')).filter(item => item.length === 6);
-                    const pointsBoxberry = await boxberryModel.find({ Index: { $in: index } }, { Code: 1, Address: 1 }).lean();
+                    const pointsBoxberry = await boxberryModel.find({ Index: { $in: index } }, { Code: 1, Address: 1, CityName: 1 }).lean();
                     const pointBoxberry = pointsBoxberry.find(point => {
                         return item.description.includes(point.Address);
                     });
@@ -64,9 +64,12 @@ module.exports.postSelectedFilters = async (req, res, next) => {
                     let paySum = null;
                     if (pointBoxberry) {
                         codePoint = pointBoxberry.Code;
-                        const fetchDeliveryBoxberry = await axios.get(`https://api.boxberry.ru/json.php?token=${boxberryToken}&method=DeliveryCosts&targetstart=010&target=${codePoint}&weight=3000`);
-                        deliverySum = fetchDeliveryBoxberry?.data?.price;
-                        paySum = deliverySum ? Math.ceil(deliverySum / 50) * 50 : null;
+                        const city = pointBoxberry.CityName;
+                        if (city) {
+                            const cityInfo = await CitiesService.findByCity(city);
+                            deliverySum = cityInfo?.price || null;
+                            paySum = deliverySum ? Math.ceil(deliverySum / 50) * 50 : null;
+                        }
                     }
 
                     const rowData = {
