@@ -88,6 +88,7 @@ module.exports.postSelectedFilters = async (req, res, next) => {
                         departurePointCode: '010',
                         codePWZ: codePoint,
                         weightPackage: '3000',
+                        selected: false,
                     }
 
                     const order = response.find(item => {
