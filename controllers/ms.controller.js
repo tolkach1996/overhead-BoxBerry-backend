@@ -49,7 +49,7 @@ module.exports.postSelectedFilters = async (req, res, next) => {
                 const isBoxberry = !!partsComment.find(item => item == 'ПВЗ');
 
                 if (isBoxberry) {
-                    const declaredSum = item.sum / 100 < 10000 ? 5 : item.sum / 100;
+                    const declaredSum = Number(item.sum / 100);
                     const sumOrder = Number(item.sum / 100);
                     const index = partsComment.map(item => item.replace(/\D/g, '')).filter(item => item.length === 6);
                     const pointsBoxberry = await boxberryModel.find({ Index: { $in: index } }, { Code: 1, Address: 1, CityName: 1 }).lean();
@@ -89,6 +89,8 @@ module.exports.postSelectedFilters = async (req, res, next) => {
                         codePWZ: codePoint,
                         weightPackage: '3000',
                         selected: false,
+                        declaredStatus: false,
+                        openingStatus: false
                     }
 
                     const order = response.find(item => {

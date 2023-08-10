@@ -1,6 +1,8 @@
 const axios = require("axios");
 require('dotenv').config();
 
+const { calcDeclaredSum, setIssue } = require('../helpers');
+
 const boxberryToken = process.env.BOXBERRY_TOKEN;
 
 
@@ -11,10 +13,8 @@ module.exports.sendConsigmentBoxBerry = async (req, res, next) => {
 
         for (let item of rows) {
 
-            let declaredSum = item.orders.reduce((pre, cur) => {
-                return pre += Number(cur.declaredSum);
-            }, 0);
-            if (declaredSum < 10000) declaredSum = 5;
+            const declaredSum = calcDeclaredSum(item.orders, item.declaredStatus);
+            const issue = setIssue(item.openingStatus);
 
             let options = {
                 token: boxberryToken,
@@ -35,7 +35,8 @@ module.exports.sendConsigmentBoxBerry = async (req, res, next) => {
                     },
                     weights: {
                         weight: item.weightPackage
-                    }
+                    },
+                    issue
                 }
             }
             let responce = await axios.post(`https://api.boxberry.ru/json.php?`, options);

@@ -2,6 +2,7 @@ const xlsx = require('xlsx');
 const path = require('path');
 
 const SitiesService = require('../services/cities.service');
+const { calcDeclaredSum, setIssue } = require('../helpers');
 
 
 module.exports.downloadConsigmentExcel = async (req, res, next) => {
@@ -9,10 +10,8 @@ module.exports.downloadConsigmentExcel = async (req, res, next) => {
         const workbook = xlsx.utils.book_new();
         let table = [];
         for (let item of req.body?.data) {
-            let declaredSum = item.orders.reduce((pre, cur) => {
-                return pre += Number(cur.declaredSum);
-            }, 0);
-            if (declaredSum < 10000) declaredSum = 5;
+            const declaredSum = calcDeclaredSum(item.orders, item.declaredStatus);
+            const issue = setIssue(item.openingStatus);
             
             let newStreing = {
                 "Дата посылки (ГГГГММДД)": item.dataPackage,
@@ -64,7 +63,7 @@ module.exports.downloadConsigmentExcel = async (req, res, next) => {
                 "Высота, см": '',
                 "Тип упаковки": '',
                 "Запретить изменение упаковки": '',
-                "Тип выдачи": '',
+                "Тип выдачи": issue,
             }
             table.push(newStreing);
         }
