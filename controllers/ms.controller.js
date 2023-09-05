@@ -3,6 +3,7 @@ const { fetch } = require('undici');
 const boxberryModel = require('../models/boxberry.model');
 
 const CitiesService = require('../services/cities.service');
+const MoyskladService = require('../services/moysklad.service');
 
 require('dotenv').config();
 
@@ -122,6 +123,18 @@ module.exports.postSelectedFilters = async (req, res, next) => {
         res.status(200).json(response);
     }
     catch (e) {
+        next(e);
+    }
+}
+module.exports.getOrderById = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+
+        const order = await MoyskladService.getById(id);
+
+        res.json({ ok: true, order })
+
+    } catch(e) {
         next(e);
     }
 }
