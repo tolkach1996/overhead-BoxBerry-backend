@@ -46,12 +46,11 @@ app.use(errorMiddleware);
 
 app.listen(PORT, async () => {
     console.log(`server started on port ${PORT}`);
-    //await MoyskladService.getById('431693837837');
-    // await AuthService.register({ login: 'боксберри', role: USER_ROLE.LOGISTICIAN, password: '12345l' });
+    //await AuthService.register({ login: 'боксберри', role: USER_ROLE.LOGISTICIAN, password: '12345l' });
     // await AuthService.register({ login: 'склад', role: USER_ROLE.STOCK_MANAGER, password: '12345s' });
-    // await MoyskladService.getStatisList();
-    /* cronJob();
+    //await MoyskladService.getStatusList();
+    cronJob();
     await updateListPointBoxberry();
     await CitiesService.updateFromBoxBerry();
-    await CitiesService.readPriceFromExcel(); */
+    //await CitiesService.readPriceFromExcel();
 });

@@ -138,3 +138,15 @@ module.exports.getOrderById = async (req, res, next) => {
         next(e);
     }
 }
+module.exports.updateOrderById = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+
+        await MoyskladService.updateStatusById(id);
+        
+        res.json({ ok: true })
+
+    } catch(e) {
+        next(e);
+    }
+}
