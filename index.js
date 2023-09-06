@@ -7,10 +7,14 @@ const history = require('connect-history-api-fallback')
 const path = require('path');
 
 const { errorMiddleware } = require('./middleware');
-const { boxberryRouter, excelRouter, filterRouter, moySkladRouter, citiesRouter } = require('./routers');
+const { boxberryRouter, excelRouter, filterRouter, moySkladRouter, citiesRouter, authRouter } = require('./routers');
 const { mongoInitial, cronJob } = require('./utils');
 const { updateListPointBoxberry } = require('./services/points.service');
 const CitiesService = require('./services/cities.service');
+const MoyskladService = require('./services/moysklad.service');
+const AuthService = require('./services/auth.service');
+
+const { USER_ROLE } = require('./constants');
 
 require('dotenv').config();
 mongoInitial();
@@ -36,13 +40,18 @@ app.use('/filters', filterRouter);
 app.use('/ms', moySkladRouter);
 app.use('/boxberry', boxberryRouter);
 app.use('/cities', citiesRouter);
+app.use('/auth', authRouter);
 
 app.use(errorMiddleware);
 
 app.listen(PORT, async () => {
     console.log(`server started on port ${PORT}`);
-    cronJob();
+    //await MoyskladService.getById('431693837837');
+    // await AuthService.register({ login: 'боксберри', role: USER_ROLE.LOGISTICIAN, password: '12345l' });
+    // await AuthService.register({ login: 'склад', role: USER_ROLE.STOCK_MANAGER, password: '12345s' });
+    // await MoyskladService.getStatisList();
+    /* cronJob();
     await updateListPointBoxberry();
     await CitiesService.updateFromBoxBerry();
-    await CitiesService.readPriceFromExcel();
+    await CitiesService.readPriceFromExcel(); */
 });
