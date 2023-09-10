@@ -8,10 +8,10 @@ const path = require('path');
 
 const { errorMiddleware } = require('./middleware');
 const { boxberryRouter, excelRouter, filterRouter, moySkladRouter, citiesRouter, authRouter } = require('./routers');
+const ordersRouter = require('./core/orders/orders.router');
 const { mongoInitial, cronJob } = require('./utils');
 const { updateListPointBoxberry } = require('./services/points.service');
 const CitiesService = require('./services/cities.service');
-const MoyskladService = require('./services/moysklad.service');
 const AuthService = require('./services/auth.service');
 
 const { USER_ROLE } = require('./constants');
@@ -42,6 +42,9 @@ app.use('/boxberry', boxberryRouter);
 app.use('/cities', citiesRouter);
 app.use('/auth', authRouter);
 
+// Новая версия рутов
+app.use('/orders', ordersRouter);
+
 app.use(errorMiddleware);
 
 app.listen(PORT, async () => {
@@ -49,8 +52,8 @@ app.listen(PORT, async () => {
     //await AuthService.register({ login: 'боксберри', role: USER_ROLE.LOGISTICIAN, password: '12345l' });
     // await AuthService.register({ login: 'склад', role: USER_ROLE.STOCK_MANAGER, password: '12345s' });
     //await MoyskladService.getStatusList();
-    cronJob();
+    /* cronJob();
     await updateListPointBoxberry();
-    await CitiesService.updateFromBoxBerry();
+    await CitiesService.updateFromBoxBerry(); */
     //await CitiesService.readPriceFromExcel();
 });
