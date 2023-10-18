@@ -47,7 +47,7 @@ class OrdersService {
                 },
                 project: []
             },
-            expand: 'agent, project',
+            expand: 'agent, project, positions',
         }
         options.filter.state.name = states.map(item => item.name);
         options.filter.project = projects.map(item => (projectUrl + item.id));
@@ -88,6 +88,10 @@ class OrdersService {
                         }
                     }
 
+                    const weightPackage = item.positions.rows.reduce((pre, cur) => {
+                        return pre += cur.weight || 0;
+                    }, 0)
+
                     const rowData = {
                         id: item.id,
                         project: item?.project?.name || null,
@@ -103,7 +107,7 @@ class OrdersService {
                         paySum: paySum,
                         departurePointCode: '010',
                         codePWZ: codePoint,
-                        weightPackage: '3000',
+                        weightPackage: weightPackage < 3000 ? 3000 : weightPackage,
                         selected: false,
                         declaredStatus: false,
                         openingStatus: false
