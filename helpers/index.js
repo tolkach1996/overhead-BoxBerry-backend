@@ -7,6 +7,16 @@ module.exports.calcDeclaredSum = (orders, status) => {
 
     return declaredSum < 10000 ? 5 : declaredSum;
 }
+module.exports.calcWeight = (positions) => {
+
+    let summaryWeight = 0;
+    for (let position of positions) {
+        const { quantity, assortment: { weight } } = position;
+        summaryWeight += (quantity * weight);
+    }
+
+    return summaryWeight < 3000 ? 3000 : summaryWeight;
+}
 module.exports.setIssue = (openingStatus) => {
     return openingStatus ? 1 : 0;
 }

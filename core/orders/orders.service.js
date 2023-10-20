@@ -1,7 +1,7 @@
 const Moysklad = require('moysklad');
 const { fetch } = require('undici');
 
-const { formatPhone } = require('../../helpers');
+const { formatPhone, calcWeight } = require('../../helpers');
 const { BoxberryModel } = require('../../models');
 const OderMoveModel = require('./models/orderMovement.model');
 
@@ -47,7 +47,7 @@ class OrdersService {
                 },
                 project: []
             },
-            expand: 'agent, project, positions',
+            expand: 'agent, project, positions.assortment',
         }
         options.filter.state.name = states.map(item => item.name);
         options.filter.project = projects.map(item => (projectUrl + item.id));
@@ -65,6 +65,7 @@ class OrdersService {
                 const isBoxberry = !!partsComment.find(item => item == 'ПВЗ');
 
                 if (isBoxberry) {
+
                     const declaredSum = Number(item.sum / 100);
                     const sumOrder = Number(item.sum / 100);
                     const index = partsComment.map(item => item.replace(/\D/g, '')).filter(item => item.length === 6);
@@ -88,10 +89,6 @@ class OrdersService {
                         }
                     }
 
-                    const weightPackage = item.positions.rows.reduce((pre, cur) => {
-                        return pre += cur.weight || 0;
-                    }, 0)
-
                     const rowData = {
                         id: item.id,
                         project: item?.project?.name || null,
@@ -107,7 +104,7 @@ class OrdersService {
                         paySum: paySum,
                         departurePointCode: '010',
                         codePWZ: codePoint,
-                        weightPackage: weightPackage < 3000 ? 3000 : weightPackage,
+                        weightPackage: calcWeight(item.positions.rows),
                         selected: false,
                         declaredStatus: false,
                         openingStatus: false
