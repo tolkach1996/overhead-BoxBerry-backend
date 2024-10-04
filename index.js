@@ -26,15 +26,15 @@ app.use(cors({ origin: "*" }));
 
 app.use(express.json());
 app.use(fileupload());
-app.use("/excel", excelRouter);
-app.use("/filters", filterRouter);
-app.use("/ms", moySkladRouter);
-app.use("/boxberry", boxberryRouter);
-app.use("/cities", citiesRouter);
-app.use("/auth", authRouter);
+app.use("/api/excel", excelRouter);
+app.use("/api//filters", filterRouter);
+app.use("/api//ms", moySkladRouter);
+app.use("/api//boxberry", boxberryRouter);
+app.use("/api//cities", citiesRouter);
+app.use("/api//auth", authRouter);
 
 // Новая версия рутов
-app.use("/orders", ordersRouter);
+app.use("/api//orders", ordersRouter);
 
 app.use(errorMiddleware);
 
