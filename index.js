@@ -4,7 +4,6 @@ const fileupload = require("express-fileupload");
 
 const serveStatic = require("serve-static");
 const history = require("connect-history-api-fallback");
-const path = require("path");
 
 const { errorMiddleware } = require("./middleware");
 const { boxberryRouter, excelRouter, filterRouter, moySkladRouter, citiesRouter, authRouter } = require("./routers");
@@ -20,18 +19,10 @@ require("dotenv").config();
 mongoInitial();
 
 const PORT = process.env.PORT || 5000;
-const IS_PRODUCTION = process.env.IS_PRODUCTION == "true";
 
 const app = express();
 
-if (IS_PRODUCTION) {
-	console.log("PROD...");
-	app.use(history());
-	app.use(serveStatic(path.resolve(__dirname, "client")));
-} else {
-	console.log("DEV ...");
-	app.use(cors({ origin: "*" }));
-}
+app.use(cors({ origin: "*" }));
 
 app.use(express.json());
 app.use(fileupload());
@@ -48,13 +39,13 @@ app.use("/orders", ordersRouter);
 app.use(errorMiddleware);
 
 app.listen(PORT, async () => {
-	console.log(`server started on port ${PORT}`);
-	//await AuthService.register({ login: 'боксберри', role: USER_ROLE.LOGISTICIAN, password: '12345l' });
-	// await AuthService.register({ login: 'склад', role: USER_ROLE.STOCK_MANAGER, password: '12345s' });
-	//await MoyskladService.getStatusList();
-	//await CitiesService.readPriceFromExcel();
+    console.log(`server started on port ${PORT}`);
+    //await AuthService.register({ login: 'боксберри', role: USER_ROLE.LOGISTICIAN, password: '12345l' });
+    // await AuthService.register({ login: 'склад', role: USER_ROLE.STOCK_MANAGER, password: '12345s' });
+    //await MoyskladService.getStatusList();
+    //await CitiesService.readPriceFromExcel();
 
-	cronJob();
-	await updateListPointBoxberry();
-	await CitiesService.updateFromBoxBerry();
+    cronJob();
+    await updateListPointBoxberry();
+    await CitiesService.updateFromBoxBerry();
 });
