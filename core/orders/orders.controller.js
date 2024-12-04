@@ -1,42 +1,39 @@
-const OrdersService = require('./orders.service');
+const OrdersService = require("./orders.service");
 
 class OrdersController {
     static async getOrderById(req, res, next) {
         try {
             const { id } = req.params;
-    
+
             const order = await OrdersService.getById(id);
-    
-            res.json({ ok: true, order })
-    
-        } catch(e) {
+
+            res.json({ ok: true, order });
+        } catch (e) {
             next(e);
         }
     }
     static async getOrderByDocumentId(req, res, next) {
         try {
             const { id } = req.params;
-    
+
             const order = await OrdersService.getByDocumentId(id);
-    
-            res.json({ ok: true, order })
-    
-        } catch(e) {
+
+            res.json({ ok: true, order });
+        } catch (e) {
             next(e);
         }
     }
     static async updateOrderById(req, res, next) {
         try {
             const { id } = req.params;
-            const { type } = req.body;
-    
+            const { type, pickupPoint } = req.body;
+
             const order = await OrdersService.getById(id);
-            await OrdersService.updateStatusByDocumenId(order.id, type);
+            await OrdersService.updateStatusByDocumenId(order.id, { type, pickupPoint });
             await OrdersService.createOrderMoveByDocumentId(order.id, { type });
-            
-            res.json({ ok: true })
-    
-        } catch(e) {
+
+            res.json({ ok: true });
+        } catch (e) {
             next(e);
         }
     }
@@ -47,19 +44,16 @@ class OrdersController {
             const orders = await OrdersService.getAllByFilter({ states: selectedMetadata, projects: selectedProjects });
 
             res.status(200).json({ ok: true, orders });
-
-        } catch(e) {
+        } catch (e) {
             next(e);
         }
     }
     static async getOrdersMove(req, res, next) {
         try {
-
             const orders = await OrdersService.getOrdersMove(req.query);
 
             res.status(200).json({ ok: true, orders });
-
-        } catch(e) {
+        } catch (e) {
             next(e);
         }
     }
